@@ -1,0 +1,45 @@
+import numpy as np 
+import pandas as pd 
+
+df=pd.read_csv('indian_employees_100_data.csv')
+print(df.head())
+
+df.info()
+
+print("Missing values in each column:")
+print(df.isnull().sum())
+
+# Handling missing values in 'salary' column by replacing them with the mean salary
+#df['salary'].fillna({df['salary'].mean()}, inplace=True)
+df['salary']=df['salary'].fillna(df['salary'].mean())
+print(df.head())
+
+df['performance_rating']=df['performance_rating'].fillna(df['performance_rating'].median())
+
+df.replace([np.inf,-np.inf,],np.nan,inplace=True)
+
+df.fillna(df.mean(numeric_only=True),inplace=True)
+
+#remove duplicates
+df.drop_duplicates(inplace=True)
+
+#remove negative values
+df['salary']=np.where(df['salary']<0,df['salary'].mean(),df['salary'])
+
+#handling otliers
+salary_mean=df['salary'].mean()
+salary_std=df['salary'].std()
+lower_bound=salary_mean-3*salary_std
+upper_bound=salary_mean+3*salary_std
+
+  # Replace outliers with the mean salary
+df=df[(df['salary']>=lower_bound) & (df['salary']<=upper_bound)]
+
+#Converting overly detailed float into  integer
+numeric_cols=df.select_dtypes(include=['float64','int64']).columns
+df[numeric_cols]=df[numeric_cols].round().astype(int)
+
+df.round
+df.to_csv('cleaned_indian_employees_100_data.csv',index=False)
+
+print('Data cleaning completed. File saved as cleaned_indian_employees_100_data.csv ')
